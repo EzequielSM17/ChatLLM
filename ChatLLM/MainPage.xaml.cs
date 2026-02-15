@@ -6,14 +6,12 @@ namespace Views
     public partial class MainPage : ContentPage
     {
 
-        private readonly ChatViewModel _viewModel;
 
         public MainPage(ChatViewModel vm)
         {
             InitializeComponent();
 
-            // Esta es la línea clave: vincula la UI con la lógica
-            BindingContext = _viewModel = vm;
+            BindingContext =  vm;
         }
 
         protected override async void OnAppearing()
@@ -21,18 +19,18 @@ namespace Views
             base.OnAppearing();
 
             var vm = (ChatViewModel)BindingContext;
-
-
-            await vm._chatService.InitializeAsync();
-
-
-            await vm.WarmupLlmAsync();
-
-            vm.Messages.Add(new Message
+            await vm.InitializeOnceAsync();
+            vm.Messages.CollectionChanged += (s, e) =>
             {
-                Text = "SISTEMA: El modelo está cargado y RabbitMQ conectado.",
-                IsBot = true
-            });
+                if (vm.Messages.Count > 0)
+                {
+                    // Hace scroll automático al último elemento añadido
+                    MessagesListView.ScrollTo(vm.Messages.Count - 1);
+                }
+            };
+            
+            
+            
         }
 
     }

@@ -23,7 +23,7 @@ public partial class ChatViewModel : ObservableObject
     [ObservableProperty] public partial int topK { get; set; } = 40;
     [ObservableProperty] public partial string modelName { get; set; } = "meta-llama-3.1-8b-instruct";
 
-
+    private bool _isInitialized = false;
     [ObservableProperty]
     public partial ObservableCollection<string> AvailableModels { get; set; } = new();
 
@@ -36,8 +36,23 @@ public partial class ChatViewModel : ObservableObject
 
         
         ManualStartCommand = new Command(async () => await StartChatAsync());
+
         _chatService.MessageReceivedAsync += OnMessageReceivedAsync;
         _ = GetModelsAsync();
+    }
+    
+
+    public async Task InitializeOnceAsync()
+    {
+        if (_isInitialized) return;
+
+        // Ejecutamos la carga inicial
+        await _chatService.InitializeAsync();
+        await WarmupLlmAsync();
+        MainThread.BeginInvokeOnMainThread(() =>
+                Messages.Add(new Message { Text = "SISTEMA: El modelo está cargado y RabbitMQ conectado.", IsBot = true }));
+        
+        _isInitialized = true;
     }
     private async Task GetModelsAsync()
     {
@@ -86,7 +101,7 @@ public partial class ChatViewModel : ObservableObject
             // 1. Limpiar el ID y mostrar en UI
             var cleanText = text.Contains("]:") ? text.Split("]:")[1].Trim() : text;
             MainThread.BeginInvokeOnMainThread(() =>
-                Messages.Add(new Message { Text = cleanText, IsBot = false }));
+                Messages.Add(new Message { Text = cleanText, IsBot = true }));
 
             // 2. Esperar al LLM (mientras esto ocurre, RabbitMQ no enviará más mensajes a esta app)
             var response = await GetLlmResponse(cleanText);
