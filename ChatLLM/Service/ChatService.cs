@@ -15,7 +15,7 @@ public class ChatService : IDisposable
 
     private readonly ConnectionFactory _factory = new()
     {
-        HostName = "localhost",
+        HostName = "192.168.0.108",
         Port = 5673,
         UserName = "guest",
         Password = "guest",

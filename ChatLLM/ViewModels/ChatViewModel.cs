@@ -23,7 +23,7 @@ public partial class ChatViewModel : ObservableObject
     [ObservableProperty] public partial string modelName { get; set; } = "meta-llama-3.1-8b-instruct";
 
     [ObservableProperty]
-    public partial ObservableCollection<string> AvailableModels { get; set; } = new() { "meta-llama-3.1-8b-instruct", "gemma-3-270m-it" };
+    public partial ObservableCollection<string> AvailableModels { get; set; } = new();
 
     public ICommand ManualStartCommand { get; }
 
@@ -37,8 +37,42 @@ public partial class ChatViewModel : ObservableObject
 
         // Definimos el comando correctamente
         ManualStartCommand = new Command(async () => await StartChatAsync());
+        _ = GetModelsAsync();
     }
+    private async Task GetModelsAsync()
+    {
+        try
+        {
+            // LM Studio usa /v1/models (estándar de OpenAI)
+            var response = await _http.GetAsync("/v1/models");
 
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+                // Extraemos los IDs de los modelos cargados
+                var modelList = content.GetProperty("data")
+                                       .EnumerateArray()
+                                       .Select(m => m.GetProperty("id").GetString() ?? "desconocido")
+                                       .ToList();
+
+                // Actualizamos la colección en el hilo principal
+                MainThread.BeginInvokeOnMainThread(() => {
+                    AvailableModels = new ObservableCollection<string>(modelList);
+
+                    // Si hay modelos, seleccionamos el primero por defecto
+                    if (AvailableModels.Any())
+                    {
+                        modelName = AvailableModels.First();
+                    }
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error cargando modelos: {ex.Message}");
+        }
+    }
     private async Task StartChatAsync()
     {
         if (IsLoading) return;
