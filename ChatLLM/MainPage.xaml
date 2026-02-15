@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodel="clr-namespace:ViewModels"
+             xmlns:models="clr-namespace:Models"
+             x:Class="Views.MainPage"
+             x:DataType="viewmodel:ChatViewModel"
+             >
+
+    <Grid RowDefinitions="Auto, *, Auto" Padding="10">
+
+        <HorizontalStackLayout Grid.Row="0" Spacing="10" HorizontalOptions="Center">
+            <ActivityIndicator IsRunning="{Binding IsLoading, Mode=TwoWay}" />
+            <Label Text="{Binding StatusMessage, Mode=TwoWay}" VerticalOptions="Center" />
+        </HorizontalStackLayout>
+
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Messages, Mode=TwoWay}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Message">
+                    <Border BackgroundColor="{Binding Color}" Margin="5">
+                        <Label Text="{Binding Text, Mode=TwoWay}" />
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Button Grid.Row="2" 
+        Text="INICIAR CONVERSACIÓN" 
+        Command="{Binding ManualStartCommand}"
+        IsEnabled="{Binding isLoading, Converter={StaticResource InvertedBoolConverter}}">
+
+        </Button>
+    </Grid>
+</ContentPage>
