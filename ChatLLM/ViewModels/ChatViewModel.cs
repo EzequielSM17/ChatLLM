@@ -34,7 +34,7 @@ public partial class ChatViewModel : ObservableObject
         _chatService = chatService;
         _http = new HttpClient { BaseAddress = new Uri("http://localhost:1234") };
 
-        _chatService.MessageReceived += OnMessageReceived;
+        
         ManualStartCommand = new Command(async () => await StartChatAsync());
         _chatService.MessageReceivedAsync += OnMessageReceivedAsync;
         _ = GetModelsAsync();
@@ -86,7 +86,7 @@ public partial class ChatViewModel : ObservableObject
             // 1. Limpiar el ID y mostrar en UI
             var cleanText = text.Contains("]:") ? text.Split("]:")[1].Trim() : text;
             MainThread.BeginInvokeOnMainThread(() =>
-                Messages.Add(new Message { Text = cleanText, IsBot = true }));
+                Messages.Add(new Message { Text = cleanText, IsBot = false }));
 
             // 2. Esperar al LLM (mientras esto ocurre, RabbitMQ no enviará más mensajes a esta app)
             var response = await GetLlmResponse(cleanText);
@@ -104,19 +104,7 @@ public partial class ChatViewModel : ObservableObject
             await _chatService.ConfirmMessageAsync(deliveryTag);
         }
     }
-    private async void OnMessageReceived(string text)
-    {
 
-       
-        MainThread.BeginInvokeOnMainThread(() =>
-            Messages.Add(new Message { Text = text, IsBot = true }));
-        
-        await Task.Delay(2000);
-
-        var response = await GetLlmResponse(text);
-
-        await _chatService.SendMessageAsync(response);
-    }
 
     private async Task<string> GetLlmResponse(string prompt)
     {
