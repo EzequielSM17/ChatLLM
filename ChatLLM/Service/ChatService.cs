@@ -21,6 +21,12 @@ public class ChatService : IDisposable
         Port = 5673,
         UserName = "guest",
         Password = "guest",
+        // Aumentamos el intervalo de latido a 60 segundos
+        RequestedHeartbeat = TimeSpan.FromSeconds(180),
+        // Aumentamos el tiempo de espera de la conexión
+        RequestedConnectionTimeout = TimeSpan.FromSeconds(180),
+        // Habilitamos la recuperación automática si se cae
+        AutomaticRecoveryEnabled = true
     };
 
     // En ChatService.cs

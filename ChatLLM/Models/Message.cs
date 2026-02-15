@@ -5,6 +5,6 @@ namespace Models
     {
         public string Text { get; set; } = string.Empty;
         public bool IsBot { get; set; }
-        public Color Color => IsBot ? Colors.LightBlue : Colors.LightGreen;
+        public Color Color => IsBot ? Colors.Coral : Colors.DarkGreen;
     }
 }

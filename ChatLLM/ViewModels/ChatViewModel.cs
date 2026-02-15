@@ -32,7 +32,7 @@ public partial class ChatViewModel : ObservableObject
     public ChatViewModel(ChatService chatService)
     {
         _chatService = chatService;
-        _http = new HttpClient { BaseAddress = new Uri("http://localhost:1234") };
+        _http = new HttpClient { BaseAddress = new Uri("http://localhost:1234"), Timeout = TimeSpan.FromMinutes(3) };
 
         
         ManualStartCommand = new Command(async () => await StartChatAsync());
@@ -126,7 +126,11 @@ public partial class ChatViewModel : ObservableObject
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-                return content.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString() ?? "...";
+                var newMessage= content.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString() ?? "...";
+                MainThread.BeginInvokeOnMainThread(() =>
+                Messages.Add(new Message { Text = newMessage, IsBot = false }));
+                return newMessage;
+                
             }
         }
         catch (Exception ex) { return $"Error: {ex.Message}"; }
