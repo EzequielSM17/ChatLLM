@@ -22,13 +22,12 @@ namespace Views
 
             var vm = (ChatViewModel)BindingContext;
 
-            // 1. Inicia RabbitMQ
+
             await vm._chatService.InitializeAsync();
 
-            // 2. Avisa al LLM (Warmup)
+
             await vm.WarmupLlmAsync();
 
-            // 3. Escribe en el chat que ya está listo
             vm.Messages.Add(new Message
             {
                 Text = "SISTEMA: El modelo está cargado y RabbitMQ conectado.",
