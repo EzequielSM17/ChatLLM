@@ -21,6 +21,10 @@ public partial class ChatViewModel : ObservableObject
     [ObservableProperty] public partial string StatusMessage { get; set; } = "Esperando inicio...";
     [ObservableProperty] public partial string systemPrompt { get; set; } = "Eres un asistente servicial.";
     [ObservableProperty] public partial int topK { get; set; } = 40;
+    [ObservableProperty] public partial float repeatPenalty { get; set; } = 1.1f;
+    [ObservableProperty] public partial float topP { get; set; } = 0.95f;
+    [ObservableProperty] public partial float minP { get; set; } = 0.05f;
+    [ObservableProperty] public partial int maxTokens { get; set; } = 512;
     [ObservableProperty] public partial string modelName { get; set; } = "meta-llama-3.1-8b-instruct";
 
     private bool _isInitialized = false;
@@ -134,7 +138,11 @@ public partial class ChatViewModel : ObservableObject
                     new { role = "user", content = prompt } 
                 },
                 temperature = Temperature,
-                top_k = topK
+                top_k = topK,
+                top_p = topP,
+                min_p = minP,
+                repeat_penalty = repeatPenalty,
+                max_tokens = maxTokens
             };
 
             var response = await _http.PostAsJsonAsync("/v1/chat/completions", requestBody);

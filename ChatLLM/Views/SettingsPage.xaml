@@ -35,6 +35,17 @@
 
             <Label Text="{Binding topK, Mode=TwoWay, StringFormat='Top K: {0}'}" />
             <Stepper Minimum="1" Maximum="100" Value="{Binding topK, Mode=TwoWay}" />
+            <Label Text="{Binding repeatPenalty, StringFormat='Repeat Penalty: {0:F1}'}" />
+            <Slider Minimum="0" Maximum="2" Value="{Binding repeatPenalty, Mode=TwoWay}" />
+
+            <Label Text="{Binding topP, StringFormat='Top P Sampling: {0:F2}'}" />
+            <Slider Minimum="0" Maximum="1" Value="{Binding topP, Mode=TwoWay}" />
+
+            <Label Text="{Binding minP, StringFormat='Min P Sampling: {0:F2}'}" />
+            <Slider Minimum="0" Maximum="1" Value="{Binding minP, Mode=TwoWay}" />
+
+            <Label Text="Max Tokens" />
+            <Entry Text="{Binding maxTokens, Mode=TwoWay}" Keyboard="Numeric" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

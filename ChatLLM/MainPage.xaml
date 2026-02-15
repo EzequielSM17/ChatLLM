@@ -29,7 +29,7 @@
                         Padding="15,10"
                         StrokeThickness="0"
                         HorizontalOptions="Start"
-                        MaximumWidthRequest="320">
+                        MaximumWidthRequest="640">
                             <Border.StrokeShape>
                                 <RoundRectangle CornerRadius="18" />
                             </Border.StrokeShape>
