@@ -9,6 +9,7 @@ public class ChatService : IDisposable
     private IConnection? _connection;
     private IChannel? _channel;
     private string? _queueName;
+    public string? CurrentAppId { get; set; }
 
     // Este evento notificará al ViewModel
     public event Action<string>? MessageReceived;
@@ -25,6 +26,7 @@ public class ChatService : IDisposable
     {
         try
         {
+            CurrentAppId = "Bot_" + Guid.NewGuid().ToString().Substring(0, 4);
             _connection = await _factory.CreateConnectionAsync();
             _channel = await _connection.CreateChannelAsync();
 
@@ -54,7 +56,11 @@ public class ChatService : IDisposable
         var body = ea.Body.ToArray();
         var message = Encoding.UTF8.GetString(body);
 
-        // Notificamos a cualquier suscriptor (nuestro ViewModel)
+        if (!string.IsNullOrEmpty(CurrentAppId) && message.StartsWith($"[{CurrentAppId}]:"))
+        {
+            await Task.CompletedTask;
+            return;
+        }
         MessageReceived?.Invoke(message);
 
         await Task.CompletedTask;
@@ -62,9 +68,16 @@ public class ChatService : IDisposable
 
     public async Task SendMessageAsync(string message)
     {
-        if (_channel is null) return;
-        var body = Encoding.UTF8.GetBytes(message);
-        await _channel.BasicPublishAsync(exchange: "groupChat", routingKey: string.Empty, body: body);
+        if (_channel is null || string.IsNullOrEmpty(CurrentAppId)) return;
+
+        // Al enviar, siempre le ponemos nuestra "firma"
+        var messageWithId = $"[{CurrentAppId}]: {message}";
+        var body = Encoding.UTF8.GetBytes(messageWithId);
+
+        await _channel.BasicPublishAsync(
+            exchange: "groupChat",
+            routingKey: string.Empty,
+            body: body);
     }
 
     public void Dispose()

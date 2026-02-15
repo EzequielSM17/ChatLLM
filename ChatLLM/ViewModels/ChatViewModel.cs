@@ -17,10 +17,12 @@ public partial class ChatViewModel : ObservableObject
     [ObservableProperty] public partial ObservableCollection<Message> Messages { get; set; } = new();
     [ObservableProperty] public partial float Temperature { get; set; } = 0.7f;
     [ObservableProperty] public partial bool IsLoading { get; set; } = false;
+
     [ObservableProperty] public partial string StatusMessage { get; set; } = "Esperando inicio...";
     [ObservableProperty] public partial string systemPrompt { get; set; } = "Eres un asistente servicial.";
     [ObservableProperty] public partial int topK { get; set; } = 40;
     [ObservableProperty] public partial string modelName { get; set; } = "meta-llama-3.1-8b-instruct";
+
 
     [ObservableProperty]
     public partial ObservableCollection<string> AvailableModels { get; set; } = new();
@@ -34,7 +36,6 @@ public partial class ChatViewModel : ObservableObject
 
         // El ViewModel se suscribe al evento del Servicio
         _chatService.MessageReceived += OnMessageReceived;
-
         // Definimos el comando correctamente
         ManualStartCommand = new Command(async () => await StartChatAsync());
         _ = GetModelsAsync();
@@ -89,10 +90,7 @@ public partial class ChatViewModel : ObservableObject
        
         MainThread.BeginInvokeOnMainThread(() =>
             Messages.Add(new Message { Text = text, IsBot = true }));
-        if (text.StartsWith("[BOT_1]"))
-        {
-            return;
-        }
+        
         // 2. Esperar para que no sea infinito instantáneo
         await Task.Delay(2000);
 
@@ -100,7 +98,7 @@ public partial class ChatViewModel : ObservableObject
         var response = await GetLlmResponse(text);
 
         // 4. Enviar respuesta de vuelta a RabbitMQ
-        await _chatService.SendMessageAsync($"[BOT_1]: {response}");
+        await _chatService.SendMessageAsync(response);
     }
 
     private async Task<string> GetLlmResponse(string prompt)
